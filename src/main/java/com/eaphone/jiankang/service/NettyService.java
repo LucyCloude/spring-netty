@@ -23,17 +23,22 @@ public class NettyService {
     public void service(ChannelHandlerContext ctx, Object msg) {
         System.out.println(ctx.name() + ":" + String.valueOf(msg));
         JSONObject jsonObject = JSON.parseObject((String) msg);
+
         String id = jsonObject.getString("id");
         String msg1 = jsonObject.getString("msg");
-
+        //发送给谁的消息
         ChannelHandlerContext channelHandlerContext = DiscardServerHandler.cmap.get(id);
+        //发送给指定客户端
         ChannelFuture future = channelHandlerContext.writeAndFlush(Unpooled.copiedBuffer(msg1.getBytes()));
+        //是否发送成功
         future.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
                 if (channelFuture.isSuccess()){
+                    //发送成功 回应发送者
                     ctx.writeAndFlush(Unpooled.copiedBuffer("true".getBytes()));
                 }else{
+                    //发送失败 回应发送者
                     ctx.writeAndFlush(Unpooled.copiedBuffer("false".getBytes()));
                 }
             }
